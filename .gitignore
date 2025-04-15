@@ -1,3 +1,4 @@
-/.env
-/sources.json
-/notes.md
+.env
+sources.json
+notes.md
+venv/
