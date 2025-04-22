@@ -7,43 +7,43 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-CHANNEL_ID = int(os.getenv("DISCORD_INTEL_STREAM_CHANNEL_ID"))
+def setup_bot(application_id=None):
+    intents = discord.Intents.default()
+    intents.messages = True
+    intents.message_content = True
+    bot = commands.Bot(command_prefix="!", intents=intents, application_id=application_id)
 
-intents = discord.Intents.default()
-intents.message_content = True
+    # Load channel ID inside setup
+    bot.channel_id = int(os.getenv("DISCORD_INTEL_STREAM_CHANNEL_ID"))
 
-bot = commands.Bot(command_prefix="!", intents=intents)
+    @bot.event
+    async def on_ready():
+        print(f"Observer is online as {bot.user}!")
+        print(f"Connected Guilds: {[guild.name for guild in bot.guilds]}\n")
 
-@bot.event
-async def on_ready():
-    print(f"Observer is online as {bot.user}!")
-    print(f"Connected Guilds: {[guild.name for guild in bot.guilds]}")
+    return bot
 
-async def send_message(content):
-    channel = bot.get_channel(CHANNEL_ID)
+async def send_message(bot, content):
+    channel = bot.get_channel(bot.channel_id)
     if channel:
         await channel.send(content)
 
-async def send_file(file_path):
-    channel = bot.get_channel(CHANNEL_ID)
+async def send_file(bot, file_path):
+    channel = bot.get_channel(bot.channel_id)
     if channel:
         with open(file_path, 'rb') as f:
             discord_file = discord.File(f)
             await channel.send(file=discord_file)
 
-async def fetch_message_content(message_id):
-    channel = bot.get_channel(CHANNEL_ID)
+async def fetch_message_content(bot, message_id):
+    channel = bot.get_channel(bot.channel_id)
     if channel:
         message = await channel.fetch_message(message_id)
         return message.content
     return None
 
-async def edit_message(message_id, new_content):
-    channel = bot.get_channel(CHANNEL_ID)
+async def edit_message(bot, message_id, new_content):
+    channel = bot.get_channel(bot.channel_id)
     if channel:
         message = await channel.fetch_message(message_id)
         await message.edit(content=new_content)
-
-def setup_bot():
-    return bot

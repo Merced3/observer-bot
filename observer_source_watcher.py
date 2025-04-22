@@ -31,7 +31,7 @@ def save_seen(seen):
     with open(SEEN_FILE, "w") as f:
         json.dump(seen, f, indent=4)
 
-async def check_all_sources():
+async def check_all_sources(bot):
     print("[Observer] Checking all sources...")  # New: Visual indicator in terminal
     sources = load_sources()
     seen = load_seen()
@@ -44,11 +44,11 @@ async def check_all_sources():
             headlines = rss_fetcher.fetch_rss_headlines(url)
         else:
             # Placeholder for other fetchers, scrapers, etc.
-            print(f"[Observer] No fetcher available for: {url}")
+            print(f"  [Observer] No fetcher available for: {url}")
             continue
 
         if not headlines:
-            print(f"[Observer] No headlines found for: {url}")
+            print(f"  [Observer] No headlines found for: {url}")
             continue
 
         # Initialize if URL has never been seen before
@@ -58,9 +58,9 @@ async def check_all_sources():
         for article in headlines:
             if article["guid"] not in seen[url]: # Info Wars
                 message = format_article_message(article, source_name)
-                await send_message(message)
+                await send_message(bot, message)
                 seen[url].append(article["guid"])
-                print(f"[Observer] New headline posted: {article['title']}")
+                print(f"  [Observer] New headline posted: {article['title']}")
 
     save_seen(seen)
     print("[Observer] Finished checking sources.\n")

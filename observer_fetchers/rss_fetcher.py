@@ -3,11 +3,11 @@ from bs4 import BeautifulSoup
 
 def fetch_rss_headlines(url):
     try:
-        print(f"[FETCH] Trying to pull RSS feed from: {url}")
+        print(f"    [FETCH] Trying to pull RSS feed from: {url}")
         response = requests.get(url)
         response.raise_for_status()
 
-        print("[FETCH] RSS feed pulled successfully.")
+        print("    [FETCH] RSS feed pulled successfully.")
         soup = BeautifulSoup(response.text, 'xml')  # Use XML parsing!
 
         headlines = []
@@ -34,9 +34,9 @@ def fetch_rss_headlines(url):
                     "pubdate": pubdate
                 })
 
-        print(f"[FETCH] Found {len(headlines)} headlines.")
+        print(f"    [FETCH] Found {len(headlines)} headlines.")
         return headlines
 
     except Exception as e:
-        print(f"[ERROR] Fetching RSS: {e}")
+        print(f"    [ERROR] Fetching RSS: {e}")
         return []

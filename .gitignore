@@ -5,3 +5,4 @@ venv/
 __pycache__/
 seen_headlines.json
 bookmark_sources.json
+old_code/
