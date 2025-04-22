@@ -34,6 +34,21 @@ def SourceAdded():
 def SourceRemoved():
     return "🗑️ Source removed successfully."
 
+def SourceNameNotFound(name: str):
+    return f"⚠️ Source with name '{name}' not found."
+
+def SourceListEmpty():
+    return "⚠️ The source list is empty."
+
+def SourceList(data: dict):
+    message_lines = ["📚 **Current Sources:**"]
+    for source in data["sources"]:
+        line = f"- {source.get('name', 'Unnamed')}"
+        message_lines.append(line)
+
+    message = "\n".join(message_lines)
+    return message
+
 def NoNewArticles():
     return "🔍 No new articles found."
 

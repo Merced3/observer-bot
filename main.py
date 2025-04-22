@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from observer_discord import setup_bot
 from observer_source_modal import setup_modals
 from observer_source_watcher import check_all_sources
-from observer_message_format import SourceAdded, SourceAlreadyExists
+from observer_message_format import SourceRemoved, SourceNameNotFound, SourceListEmpty, SourceList
 
 # Load environment variables
 load_dotenv()
@@ -23,11 +23,26 @@ if not os.path.exists(SOURCES_FILE):
     with open(SOURCES_FILE, "w") as f:
         json.dump({"sources": []}, f, indent=4)
 
+def has_sources():
+    if not os.path.exists(SOURCES_FILE):
+        return False
+
+    with open(SOURCES_FILE, "r") as f:
+        data = json.load(f)
+
+    return bool(data.get("sources"))
+
+
 async def background_news_loop():
     await bot.wait_until_ready()
     while not bot.is_closed():
-        await check_all_sources(bot)
-        await asyncio.sleep(60)  # 1 minute for testing, 300 for 5 minutes
+        # Check if sources exist
+        if has_sources():
+            await check_all_sources(bot)
+        else:
+            print("[Observer] No sources to check, sleeping...")
+        
+        await asyncio.sleep(60)
 
 @bot.event
 async def on_ready():
@@ -58,6 +73,36 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
+@bot.command(name="listsources")
+async def list_sources(ctx):
+    with open(SOURCES_FILE, "r") as f:
+        data = json.load(f)
+
+    if not data["sources"]:
+        await ctx.send(SourceListEmpty())
+        return
+
+    message = SourceList(data)
+    await ctx.send(message)
+
+@bot.command(name="removesource")
+async def remove_source(ctx, *, name: str):
+    name = name.strip()
+
+    with open(SOURCES_FILE, "r") as f:
+        data = json.load(f)
+
+    original_count = len(data["sources"])
+    data["sources"] = [src for src in data["sources"] if src.get("name", "").lower() != name.lower()]
+
+    if len(data["sources"]) == original_count:
+        await ctx.send(SourceNameNotFound(name))
+        return
+
+    with open(SOURCES_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+    await ctx.send(SourceRemoved())
 
 async def main():
     await bot.start(TOKEN)
