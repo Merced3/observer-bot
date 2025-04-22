@@ -25,7 +25,7 @@ observer-bot/
 ├── README.md            # You're reading it!
 ```
 
-## ℹ️ Recommended: Use a virtual environment (venv) for all Python dependencies:
+### ℹ️ Recommended: Use a virtual environment (venv) for all Python dependencies:
 
 ```
 python3 -m venv venv
