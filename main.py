@@ -5,6 +5,7 @@ import asyncio
 from dotenv import load_dotenv
 from observer_discord import setup_bot
 from observer_source_watcher import check_all_sources
+from observer_message_format import SourceAdded, SourceAlreadyExists
 
 # Load environment variables
 load_dotenv()
@@ -54,8 +55,17 @@ async def on_message(message):
     await bot.process_commands(message)
 
 @bot.command()
-async def addsource(ctx, url: str):
-    """Command to add a new news source URL"""
+async def addsource(ctx, *, args: str):
+    """Command to add a new news source URL and optional Name"""
+
+    # Split arguments manually
+    parts = args.split(" Name:")
+    url = parts[0].strip()
+
+    if len(parts) > 1:
+        name = parts[1].strip()
+    else:
+        name = "Unknown Source"  # fallback if no Name given
 
     # Auto-fix empty sources.json if needed
     if os.path.getsize(SOURCES_FILE) == 0:
@@ -68,12 +78,13 @@ async def addsource(ctx, url: str):
 
     # Check if URL already exists
     if any(source["url"] == url for source in data["sources"]):
-        await ctx.send(f"⚠️ Source already exists.")
+        await ctx.send(SourceAlreadyExists())
         return
 
     # Add new source
     data["sources"].append({
         "url": url,
+        "name": name,
         "added_by": str(ctx.author),
         "message_id": ctx.message.id
     })
@@ -82,7 +93,7 @@ async def addsource(ctx, url: str):
     with open(SOURCES_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
-    await ctx.send(f"✅ New source added successfully.")
+    await ctx.send(SourceAdded())
 
 # Run the bot
 if __name__ == "__main__":
