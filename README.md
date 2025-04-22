@@ -18,11 +18,20 @@
 
 ```bash
 observer-bot/
-├── main.py              # Core bot logic
-├── .env                 # Environment variables (bot token, secrets) – excluded from git
-├── sources.json         # List of tracked source URLs or accounts – excluded from git
-├── .gitignore           # Ignore .env, sources.json, venv, etc.
-├── README.md            # You're reading it!
+├── main.py                        # Core bot logic and startup
+├── observer_discord.py             # Bot setup and basic Discord interaction helpers
+├── observer_source_watcher.py      # Handles source polling, checking, and posting
+├── observer_message_format.py      # Modular formatting system for clean message outputs
+├── observer_source_modal.py        # Slash command modal for adding sources via UI
+├── observer_fetchers/
+│   ├── rss_fetcher.py              # RSS pulling logic
+│   ├── fmp_fetcher.py              # Financial Modeling Prep fetcher
+│   ├── finnhub_fetcher.py          # Finnhub fetcher
+├── .env.example                    # Environment variable example (API keys, bot token)
+├── requirements.txt                # Python package list
+├── sources.json                    # List of tracked source URLs (dynamic, gitignored)
+├── README.md                       # You're reading it!
+├── .gitignore                      # Ignore sensitive/configuration files
 ```
 
 ### ℹ️ Recommended: Use a virtual environment (venv) for all Python dependencies:
@@ -37,12 +46,17 @@ pip install -r requirements.txt
 
 ## 🧪 Setup Checklist
 
-> ⚠️ Copy `.env.example` → `.env` and fill in your actual token and IDs before running the bot.
+> ⚠️ Copy `.env.example` → `.env` and fill in your actual token and API keys before running the bot.
 
-1. Add your Discord bot token and other variables to `.env`
-2. Create a private Discord server and invite the bot
-3. Add source URLs using `!addsource` command in a designated channel
-4. Observer will begin polling, logging, and storing relevant data automatically
+### 1️⃣ Bot Setup:
+- Add your Discord bot token and IDs to `.env`
+- Create a private Discord server and invite the bot
+- Ensure bot permissions include sending messages, embedding links, attaching files, and reading message history
+
+### 2️⃣ Adding News/Data Sources:
+- Use the `/addsource` slash command inside Discord to register a new source
+- Provide URL, Name, and Type (Data/News) via the modal popup
+- Observer will begin polling sources and logging live data automatically
 
 ---
 
@@ -62,6 +76,7 @@ The following are excluded from version control:
 - Summarization via lightweight helper LLMs
 - Self-updating source discovery based on past news lead time
 - Offline training using local LLMs (Mistral/MythoMax) with sentiment and price correlation
+- Real-time Webhook Receivers (Finnhub, MarketAux) for instant low-latency updates
 
 ---
 
