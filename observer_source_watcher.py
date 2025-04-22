@@ -1,9 +1,9 @@
 # observer_source_watcher.py
 import json
 import os
-from observer_fetchers import rss_fetcher
 from observer_discord import send_message
 from observer_message_format import format_article_message
+from observer_fetchers import rss_fetcher, fmp_fetcher, finnhub_fetcher
 
 
 SOURCES_FILE = "sources.json"
@@ -32,18 +32,30 @@ def save_seen(seen):
         json.dump(seen, f, indent=4)
 
 async def check_all_sources(bot):
-    print("[Observer] Checking all sources...")  # New: Visual indicator in terminal
+    print("  [Observer] Checking all sources...")  # New: Visual indicator in terminal
+    
     sources = load_sources()
     seen = load_seen()
+
+    fetchers = {
+        "finnhub.io": lambda: finnhub_fetcher.fetch_finnhub_news(symbol="SPY"),
+        "financialmodelingprep": lambda: fmp_fetcher.fetch_fmp_news(symbol="SPY"),
+        "rss": lambda url: rss_fetcher.fetch_rss_headlines(url)
+    }
 
     for source in sources:
         url = source["url"]
         source_name = source.get("name", "Unknown Source")
-        # Detect source type (basic detection for now)
-        if url.endswith(".rss") or url.endswith(".xml") or "feed" in url:
-            headlines = rss_fetcher.fetch_rss_headlines(url)
+        headlines = []
+
+        # Pick correct fetcher
+        if "finnhub.io" in url:
+            headlines = fetchers["finnhub.io"]()
+        elif "financialmodelingprep" in url:
+            headlines = fetchers["financialmodelingprep"]()
+        elif url.endswith(".rss") or url.endswith(".xml") or "feed" in url:
+            headlines = fetchers["rss"](url)
         else:
-            # Placeholder for other fetchers, scrapers, etc.
             print(f"  [Observer] No fetcher available for: {url}")
             continue
 
@@ -63,4 +75,4 @@ async def check_all_sources(bot):
                 print(f"  [Observer] New headline posted: {article['title']}")
 
     save_seen(seen)
-    print("[Observer] Finished checking sources.\n")
+    print("  [Observer] Finished checking sources.\n")
