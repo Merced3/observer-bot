@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from observer_discord import setup_bot
 from observer_source_modal import setup_modals
 from observer_source_watcher import check_all_sources
-from observer_message_format import SourceRemoved, SourceNameNotFound, SourceListEmpty, SourceList
+from observer_message_format import SourceRemoved, SourceNameNotFound, SourceListEmpty, SourceList, CommandList
 
 # Load environment variables
 load_dotenv()
@@ -103,6 +103,11 @@ async def remove_source(ctx, *, name: str):
         json.dump(data, f, indent=4)
 
     await ctx.send(SourceRemoved())
+
+@bot.command(name="commands")
+async def list_commands(ctx):
+    await ctx.send(CommandList())
+
 
 async def main():
     await bot.start(TOKEN)

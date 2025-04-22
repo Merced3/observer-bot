@@ -54,3 +54,19 @@ def NoNewArticles():
 
 def FetchError(source_url: str):
     return f"⚠️ Failed to fetch articles from: {source_url}"
+
+def CommandList() -> str:
+    lines = ["📜 **Observer Command List:**", ""]
+
+    # Slash Commands
+    lines.append("🖱️ **Slash Commands (use '/' to trigger):**")
+    lines.append("> `/addsource` - Add a new source using a popup modal")
+    lines.append("")
+
+    # Bot Commands
+    lines.append("⌨️ **Bot Commands (use '!' to trigger):**")
+    lines.append("> `!listsources` - List all currently tracked sources")
+    lines.append("> `!removesource <name>` - Remove a source by its saved name")
+    lines.append("> `!commands` - Show this command list")
+
+    return "\n".join(lines)
