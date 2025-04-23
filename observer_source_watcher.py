@@ -40,7 +40,7 @@ async def check_all_sources(bot):
     fetchers = {
         "finnhub.io": lambda: finnhub_fetcher.fetch_finnhub_news(symbol="SPY"),
         "financialmodelingprep": lambda: fmp_fetcher.fetch_fmp_news(symbol="SPY"),
-        "rss": lambda url: rss_fetcher.fetch_rss_headlines(url)
+        "rss": lambda url: rss_fetcher.fetch_rss_headlines(url, "INFOWARS")
     }
 
     for source in sources:
@@ -51,12 +51,12 @@ async def check_all_sources(bot):
         # Pick correct fetcher
         if "finnhub.io" in url:
             headlines = fetchers["finnhub.io"]()
-        elif "financialmodelingprep" in url:
-            headlines = fetchers["financialmodelingprep"]()
+        #elif "financialmodelingprep" in url:
+            #headlines = fetchers["financialmodelingprep"]()
         elif url.endswith(".rss") or url.endswith(".xml") or "feed" in url:
             headlines = fetchers["rss"](url)
         else:
-            print(f"  [Observer] No fetcher available for: {url}")
+            #print(f"  [Observer] No fetcher available for: {url}")
             continue
 
         if not headlines:
