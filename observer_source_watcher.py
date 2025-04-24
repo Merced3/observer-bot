@@ -8,6 +8,7 @@ from observer_fetchers import rss_fetcher, fmp_fetcher, finnhub_fetcher
 
 SOURCES_FILE = "sources.json"
 SEEN_FILE = "seen_headlines.json"
+DEBUG = False
 
 def load_sources():
     if not os.path.exists(SOURCES_FILE):
@@ -32,7 +33,7 @@ def save_seen(seen):
         json.dump(seen, f, indent=4)
 
 async def check_all_sources(bot):
-    print("  [Observer] Checking all sources...")  # New: Visual indicator in terminal
+    if DEBUG: print("  [Observer] Checking all sources...")
     
     sources = load_sources()
     seen = load_seen()
@@ -40,7 +41,7 @@ async def check_all_sources(bot):
     fetchers = {
         "finnhub.io": lambda: finnhub_fetcher.fetch_finnhub_news(symbol="SPY"),
         "financialmodelingprep": lambda: fmp_fetcher.fetch_fmp_news(symbol="SPY"),
-        "rss": lambda url: rss_fetcher.fetch_rss_headlines(url, "INFOWARS")
+        "rss": lambda url: rss_fetcher.fetch_rss_headlines(url, DEBUG)
     }
 
     for source in sources:
@@ -59,7 +60,7 @@ async def check_all_sources(bot):
             #print(f"  [Observer] No fetcher available for: {url}")
             continue
 
-        if not headlines:
+        if not headlines and DEBUG:
             print(f"  [Observer] No headlines found for: {url}")
             continue
 
@@ -72,7 +73,7 @@ async def check_all_sources(bot):
                 message = format_article_message(article, source_name)
                 await send_message(bot, message)
                 seen[url].append(article["guid"])
-                print(f"  [Observer] New headline posted: {article['title']}")
+                if DEBUG: print(f"  [Observer] New headline posted: {article['title']}")
 
     save_seen(seen)
-    print("  [Observer] Finished checking sources.\n")
+    if DEBUG: print("  [Observer] Finished checking sources.\n")
