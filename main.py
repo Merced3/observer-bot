@@ -32,7 +32,6 @@ def has_sources():
 
     return bool(data.get("sources"))
 
-
 async def background_news_loop():
     await bot.wait_until_ready()
     while not bot.is_closed():
@@ -42,7 +41,7 @@ async def background_news_loop():
         else:
             print("[Observer] No sources to check, sleeping...")
         
-        await asyncio.sleep(60)
+        await asyncio.sleep(30)
 
 @bot.event
 async def on_ready():
@@ -107,7 +106,6 @@ async def remove_source(ctx, *, name: str):
 @bot.command(name="commands")
 async def list_commands(ctx):
     await ctx.send(CommandList())
-
 
 async def main():
     await bot.start(TOKEN)
