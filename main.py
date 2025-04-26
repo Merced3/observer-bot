@@ -4,6 +4,7 @@ import json
 import asyncio
 from dotenv import load_dotenv
 from observer_discord import setup_bot
+from observer_fetchers import trending_fetcher
 from observer_source_modal import setup_modals
 from observer_source_watcher import check_all_sources
 from observer_message_format import SourceRemoved, SourceNameNotFound, SourceListEmpty, SourceList, CommandList
@@ -35,12 +36,16 @@ def has_sources():
 async def background_news_loop():
     await bot.wait_until_ready()
     while not bot.is_closed():
+        # if internet_connection():
         # Check if sources exist
         if has_sources():
             await check_all_sources(bot)
-        else:
+        elif not has_sources(): 
             print("[Observer] No sources to check, sleeping...")
-        
+        #elif no internet_connection():
+            #print("[Observer] No internet connection, waiting...")
+            # print only once when internet goes down (timestamp it), print once when it comes back up (timestamp it)
+        #await trending_fetcher.check_trending(bot)
         await asyncio.sleep(30)
 
 @bot.event
