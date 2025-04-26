@@ -64,12 +64,11 @@ async def check_all_sources(bot):
             print(f"  [Observer] No headlines found for: {url}")
             continue
 
-        # Initialize if URL has never been seen before
         if url not in seen:
             seen[url] = []
 
         for article in headlines:
-            if article["guid"] not in seen[url]: # Info Wars
+            if article["guid"] not in seen[url]:
                 message = format_article_message(article, source_name)
                 await send_message(bot, message)
                 seen[url].append(article["guid"])
