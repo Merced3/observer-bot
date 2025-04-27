@@ -10,11 +10,14 @@ TRENDING_FILE = "trending_terms.json"
 DEBUG = False
 
 def fetch_trending_terms(top_n=10):
-    pytrends = TrendReq()
+    pytrends = TrendReq(hl='en-US', tz=360, retries=3, backoff_factor=0.1,
+                        requests_args={'headers': {
+                            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'
+                        }})
 
     try:
-        trending = pytrends.trending_searches(pn="united_states")
-        trending_terms = trending[0].tolist()[:top_n]  # Get top N terms
+        trending = pytrends.trending_searches(pn='united_states')
+        trending_terms = trending.tolist()[:top_n]
         return trending_terms
     except Exception as e:
         print(f"    [ERROR] Fetching trending terms: {e}")

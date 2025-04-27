@@ -1,7 +1,9 @@
 # main.py
 import os
 import json
+import aiohttp
 import asyncio
+import datetime
 from dotenv import load_dotenv
 from observer_discord import setup_bot
 from observer_fetchers import trending_fetcher
@@ -35,18 +37,38 @@ def has_sources():
 
 async def background_news_loop():
     await bot.wait_until_ready()
+    internet_connected = True  # assume connected at start
+
     while not bot.is_closed():
-        # if internet_connection():
-        # Check if sources exist
-        if has_sources():
-            await check_all_sources(bot)
-        elif not has_sources(): 
-            print("[Observer] No sources to check, sleeping...")
-        #elif no internet_connection():
-            #print("[Observer] No internet connection, waiting...")
-            # print only once when internet goes down (timestamp it), print once when it comes back up (timestamp it)
-        #await trending_fetcher.check_trending(bot)
+        current_status = await check_internet()
+        
+        # Detect state change
+        if not current_status and internet_connected:
+            print(f"[Observer] ❌ Internet disconnected at {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}")
+            internet_connected = False
+        elif current_status and not internet_connected:
+            print(f"[Observer] ✅ Internet reconnected at {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}")
+            internet_connected = True
+
+        if current_status:
+            # Check sources only if internet is available
+            if has_sources():
+                await check_all_sources(bot)
+            else: 
+                print("[Observer] No sources to check, sleeping...")
+            
+            # TODO: Trending fetcher, SCAN for KEY WORDS Spike in activity
+            #await trending_fetcher.check_trending(bot) # This is not working currently
+        
         await asyncio.sleep(30)
+    
+async def check_internet():
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://www.google.com', timeout=5) as resp:
+                return resp.status == 200
+    except Exception:
+        return False
 
 @bot.event
 async def on_ready():
