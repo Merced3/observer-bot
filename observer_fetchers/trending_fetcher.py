@@ -1,5 +1,7 @@
 # observer_fetchers/trending_fetcher.py
-
+'''
+THIS CODE DOES NOT WORK, WAITING FOR IDEAS OF HOW TO GET KEYWORDS/ACTIVITY
+'''
 from pytrends.request import TrendReq
 import os
 import json

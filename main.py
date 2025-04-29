@@ -5,10 +5,10 @@ import aiohttp
 import asyncio
 import datetime
 from dotenv import load_dotenv
+from shared_state import current_tasks
 from observer_discord import setup_bot
-from observer_fetchers import trending_fetcher
 from observer_source_modal import setup_modals
-from observer_source_watcher import check_all_sources
+from observer_source_watcher import concurrent_sources_loop
 from observer_message_format import SourceRemoved, SourceNameNotFound, SourceListEmpty, SourceList, CommandList
 
 # Load environment variables
@@ -26,42 +26,34 @@ if not os.path.exists(SOURCES_FILE):
     with open(SOURCES_FILE, "w") as f:
         json.dump({"sources": []}, f, indent=4)
 
-def has_sources():
-    if not os.path.exists(SOURCES_FILE):
-        return False
-
-    with open(SOURCES_FILE, "r") as f:
-        data = json.load(f)
-
-    return bool(data.get("sources"))
-
 async def background_news_loop():
     await bot.wait_until_ready()
-    internet_connected = True  # assume connected at start
+    internet_connected = await check_internet()
+    
+    if internet_connected:
+        await concurrent_sources_loop(bot)
 
     while not bot.is_closed():
         current_status = await check_internet()
         
-        # Detect state change
         if not current_status and internet_connected:
             print(f"[Observer] ❌ Internet disconnected at {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}")
+            
+            for task in current_tasks: # Cancel all running tasks
+                task.cancel()
+            current_tasks.clear()
+            
             internet_connected = False
+        
         elif current_status and not internet_connected:
             print(f"[Observer] ✅ Internet reconnected at {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}")
+            await concurrent_sources_loop(bot)
             internet_connected = True
-
-        if current_status:
-            # Check sources only if internet is available
-            if has_sources():
-                await check_all_sources(bot)
-            else: 
-                print("[Observer] No sources to check, sleeping...")
-            
-            # TODO: Trending fetcher, SCAN for KEY WORDS Spike in activity
-            #await trending_fetcher.check_trending(bot) # This is not working currently
         
-        await asyncio.sleep(30)
+            
+        await asyncio.sleep(1)
     
+        
 async def check_internet():
     try:
         async with aiohttp.ClientSession() as session:

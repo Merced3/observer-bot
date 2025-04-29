@@ -3,6 +3,6 @@ sources.json
 notes.md
 venv/
 __pycache__/
-seen_headlines.json
+seen_sources.json
 bookmark_sources.json
 old_code/

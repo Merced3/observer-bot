@@ -1,10 +1,10 @@
 # observer_message_format.py
 
-def format_article_message(article: dict, source_name: str) -> str:
-    lines = ["━━━━━━━━━━━━━━━━━━━━"]
+# ---NEWS MESSAGE FORMATS---
 
+def format_article_message(article: dict, source_name: str) -> str:
     # SOURCE at top
-    lines.append(f"**SOURCE:** __{source_name}__")
+    lines = [f"**SOURCE:** __{source_name}__"]
 
     # TITLE
     if "title" in article:
@@ -22,8 +22,9 @@ def format_article_message(article: dict, source_name: str) -> str:
     if "description" in article:
         lines.append(f"> 📝 **Summary:** {article['description']}")
 
-    #lines.append("━━━━━━━━━━━━━━━━━━━━")
     return "\n".join(lines)
+
+# ---COMMAND MESSAGE FORMATS---
 
 def SourceAlreadyExists():
     return "⚠️ Source already exists."
@@ -68,5 +69,50 @@ def CommandList() -> str:
     lines.append("> `!listsources` - List all currently tracked sources")
     lines.append("> `!removesource <name>` - Remove a source by its saved name")
     lines.append("> `!commands` - Show this command list")
+
+    return "\n".join(lines)
+
+# ---REDDIT MESSAGE FORMATS---
+
+def format_trending_subreddits(subreddits: list) -> str:
+    lines = ["🌐 **Top Trending Subreddits Today:**\n"]
+
+    for sub in subreddits:
+        lines.append(f"• r/{sub}")
+
+    return "\n".join(lines)
+
+def format_reddit_keyword_surges(noun_counts, proper_counts, changes=None) -> str:
+    lines = ["📊 **Cultural Radar: Reddit Keyword Surges**\n"]
+    #lines = ["📊 Cultural Radar: Reddit Cycle Update (No Major Surges)"]
+    #lines = ["📡 Cultural Radar: Major Keyword Surges Spotted!"]
+    #lines = ["📡 Cultural Radar: Calm Waters (No Major Surges)"]
+
+    if proper_counts:
+        lines.append("🧠 **Proper Nouns:**")
+        for word, count in proper_counts[:10]:
+            lines.append(f"> • `{word}` — {count}")
+        lines.append("")
+
+    if noun_counts:
+        lines.append("🗣️ **Nouns:**")
+        for word, count in noun_counts[:10]:
+            lines.append(f"> • `{word}` — {count}")
+        lines.append("")
+
+    if changes:
+        up, down = changes.get("up", []), changes.get("down", [])
+
+        if up:
+            lines.append("📈 **Surging Terms:**")
+            for word, delta in up[:10]:
+                lines.append(f"> • `{word}` ↑ {delta}") # Ex. `word` ↑ 5
+            lines.append("")
+
+        if down:
+            lines.append("📉 **Falling Terms:**")
+            for word, delta in down[:10]:
+                lines.append(f"> • `{word}` ↓ {delta}") # Ex. `word` ↓ 5
+            lines.append("")
 
     return "\n".join(lines)
