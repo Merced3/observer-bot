@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Reddit Annotation Tool</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    .section { margin-bottom: 20px; }
+    .highlight { background-color: yellow; }
+    .divider { border-bottom: 1px solid #ccc; margin: 10px 0; }
+    button { padding: 10px; margin-top: 10px; }
+    .comment-block { margin-bottom: 10px; }
+    .divider { border-bottom: 1px solid #ccc; margin: 10px 0; }
+  </style>
+</head>
+<body>
+
+  <h2>Reddit Annotation Tool</h2>
+  <div id="postContainer"></div>
+  <button onclick="saveAndNext()">Save and Next Post</button>
+  <button onclick="undoLastHighlight()">Undo Last Highlight</button>
+
+  <script>
+    let posts = [];
+    let currentIndex = 0;
+    let highlights = [];
+    let lastHighlight = null;
+  
+    async function loadPosts() {
+      const res = await fetch("data.json");
+      posts = await res.json();
+      renderPost();
+    }
+  
+    function renderPost() {
+      const container = document.getElementById("postContainer");
+      container.innerHTML = '';
+  
+      if (currentIndex >= posts.length) {
+        container.innerHTML = "<p>✅ Done! All posts reviewed.</p>";
+        return;
+      }
+  
+      const post = posts[currentIndex];
+  
+      const titleEl = createSection("Title", post.title, "title");
+      const bodyEl = createSection("Body", post.body, "body");
+  
+      container.appendChild(titleEl);
+      container.appendChild(bodyEl);
+  
+      if (post.comments && post.comments.length > 0) {
+        const commentsEl = document.createElement("div");
+        commentsEl.className = "section";
+        commentsEl.innerHTML = "<strong>Comments:</strong><div class='divider'></div>";
+  
+        post.comments.slice(0, 10).forEach(comment => {
+          const commentWrapper = document.createElement("div");
+          commentWrapper.className = "comment-block";
+          const el = createTextSpan(comment, "comment");
+          commentWrapper.appendChild(el);
+          commentWrapper.appendChild(document.createElement("div")).className = "divider";
+          commentsEl.appendChild(commentWrapper);
+        });
+  
+        container.appendChild(commentsEl);
+      }
+    }
+  
+    function createSection(label, text, type) {
+      const section = document.createElement("div");
+      section.className = "section";
+      section.innerHTML = `<strong>${label}:</strong><br>`;
+      const span = createTextSpan(text, type);
+      section.appendChild(span);
+      return section;
+    }
+  
+    function createTextSpan(text, type) {
+      const span = document.createElement("span");
+      span.textContent = text;
+      span.className = "text";
+      span.dataset.type = type;
+      span.addEventListener("mouseup", () => {
+        const selection = window.getSelection().toString().trim();
+        if (!selection) return;
+  
+        const alreadyHighlighted = span.innerHTML.includes(`<mark class="highlight">${selection}</mark>`);
+        if (alreadyHighlighted) {
+          span.innerHTML = span.innerHTML.replace(`<mark class="highlight">${selection}</mark>`, selection);
+        } else {
+          span.innerHTML = span.innerHTML.replace(selection, `<mark class="highlight">${selection}</mark>`);
+          lastHighlight = { span, selection };
+        }
+      });
+      return span;
+    }
+  
+    function undoLastHighlight() {
+      if (lastHighlight && lastHighlight.span && lastHighlight.selection) {
+        const { span, selection } = lastHighlight;
+        span.innerHTML = span.innerHTML.replace(`<mark class="highlight">${selection}</mark>`, selection);
+        lastHighlight = null;
+      }
+    }
+  
+    function saveAndNext() {
+      const highlightData = {
+        source_index: currentIndex,
+        highlights: {
+          title: getHighlights("title"),
+          body: getHighlights("body"),
+          comments: getHighlights("comment")
+        }
+      };
+      console.log("💾 Saved:", highlightData);
+      highlights.push(highlightData);
+      currentIndex++;
+      renderPost();
+    }
+  
+    function getHighlights(type) {
+      const matches = document.querySelectorAll(`[data-type='${type}'] mark.highlight`);
+      return Array.from(matches).map(m => m.textContent.trim());
+    }
+  
+    loadPosts();
+  </script>  
+
+</body>
+</html>

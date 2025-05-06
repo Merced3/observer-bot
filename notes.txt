@@ -1,0 +1,13 @@
+(venv) merced@observer-node:~/Documents/observer-bot$ python3 main.py
+Observer is online as Observer#7410!
+Guilds connected: ["Merced_3's server"]
+⚠️ Skipping r/investing due to error: error with request 
+⚠️ Skipping r/stocks due to error: error with request Cannot connect to host oauth.reddit.com:443 ssl:True [SSLCertVerificationError: (1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: EE certificate key too weak (_ssl.c:1007)')]
+⚠️ Skipping r/technology due to error: error with request Cannot connect to host oauth.reddit.com:443 ssl:True [SSLCertVerificationError: (1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: EE certificate key too weak (_ssl.c:1007)')]
+⚠️ Skipping r/Futurology due to error: error with request Cannot connect to host oauth.reddit.com:443 ssl:True [SSLCertVerificationError: (1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: EE certificate key too weak (_ssl.c:1007)')]
+⚠️ Skipping r/programming due to error: error with request Cannot connect to host oauth.reddit.com:443 ssl:True [SSLCertVerificationError: (1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: EE certificate key too weak (_ssl.c:1007)')]
+⚠️ Skipping r/memes due to error: error with request Cannot connect to host oauth.reddit.com:443 ssl:True [SSLCertVerificationError: (1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: EE certificate key too weak (_ssl.c:1007)')]
+⚠️ Skipping r/dankmemes due to error: error with request Cannot connect to host oauth.reddit.com:443 ssl:True [SSLCertVerificationError: (1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: EE certificate key too weak (_ssl.c:1007)')]
+⚠️ Skipping r/worldnews due to error: error with request Cannot connect to host oauth.reddit.com:443 ssl:True [SSLCertVerificationError: (1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: EE certificate key too weak (_ssl.c:1007)')]
+⚠️ Skipping r/news due to error: error with request Cannot connect to host oauth.reddit.com:443 ssl:True [SSLCertVerificationError: (1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: EE certificate key too weak (_ssl.c:1007)')]
+[Observer] ⚠️ Source 'observe_reddit()' failed: error with request 
