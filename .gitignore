@@ -6,3 +6,5 @@ __pycache__/
 seen_sources.json
 bookmark_sources.json
 old_code/
+observer_annotation/data_highlighted.json
+observer_annotation/training_data.json

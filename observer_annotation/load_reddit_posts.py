@@ -3,6 +3,8 @@
 import os
 import json
 import asyncio
+import spacy
+from asyncpraw.models import Comment
 import asyncpraw
 from dotenv import load_dotenv
 
@@ -21,6 +23,8 @@ target_subreddits = [
     "memes", "dankmemes",                              # Memes
     "worldnews", "news"                                # News
 ]
+
+nlp = spacy.load("en_core_web_sm")
 
 async def get_reddit_posts(limit_per_sub=5, comments_per_post=10):
     
@@ -60,5 +64,43 @@ async def get_reddit_posts(limit_per_sub=5, comments_per_post=10):
 
     print(f"✅ Saved {len(all_posts)} Reddit posts to data.json")
 
+def auto_highlight(text):
+    doc = nlp(text)
+    new_text = ""
+    last_idx = 0
+    for token in doc:
+        if token.pos_ in ["NOUN", "PROPN"]:
+            start, end = token.idx, token.idx + len(token)
+            new_text += text[last_idx:start]
+            new_text += f'<mark class="highlight">{text[start:end]}</mark>'
+            last_idx = end
+    new_text += text[last_idx:]
+    return new_text
+
+def get_text_from_json():
+    with open("observer_annotation/data.json", "r") as f:
+        data = json.load(f)
+    return data
+
+async def auto_highlight_text():
+    data = get_text_from_json()
+    highlighted_data = []
+
+    for post in data:
+        highlighted_post = {
+            "subreddit": post.get("subreddit", ""),
+            "title": auto_highlight(post.get("title", "")),
+            "body": auto_highlight(post.get("body", "")),
+            "comments": [auto_highlight(c) for c in post.get("comments", [])]
+        }
+        highlighted_data.append(highlighted_post)
+
+    with open("observer_annotation/data_highlighted.json", "w") as f:
+        json.dump(highlighted_data, f, indent=2)
+
+    print(f"✅ Auto-highlighted {len(highlighted_data)} posts and saved to data_highlighted.json")
+
+
 if __name__ == "__main__":
-    asyncio.run(get_reddit_posts())
+    asyncio.run(auto_highlight_text())
+    # end it

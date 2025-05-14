@@ -8,4 +8,6 @@ urllib3
 praw
 asyncpraw
 spacy
+flask
+flask_cors
 #python -m spacy download en_core_web_sm

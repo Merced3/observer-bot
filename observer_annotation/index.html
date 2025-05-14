@@ -25,36 +25,45 @@
     let currentIndex = 0;
     let highlights = [];
     let lastHighlight = null;
-  
+    
     async function loadPosts() {
-      const res = await fetch("data.json");
+      const res = await fetch("data_highlighted.json");
       posts = await res.json();
       renderPost();
     }
-  
+    
+    // Enable click-to-remove for all highlights
+    document.addEventListener("click", function (e) {
+      if (e.target.tagName === "MARK" && e.target.classList.contains("highlight")) {
+        const parent = e.target.parentNode;
+        const textNode = document.createTextNode(e.target.textContent);
+        parent.replaceChild(textNode, e.target);
+      }
+    });
+
     function renderPost() {
       const container = document.getElementById("postContainer");
       container.innerHTML = '';
-  
+    
       if (currentIndex >= posts.length) {
         container.innerHTML = "<p>✅ Done! All posts reviewed.</p>";
         return;
       }
-  
+    
       const post = posts[currentIndex];
-  
+    
       const titleEl = createSection("Title", post.title, "title");
       const bodyEl = createSection("Body", post.body, "body");
-  
+    
       container.appendChild(titleEl);
       container.appendChild(bodyEl);
-  
+    
       if (post.comments && post.comments.length > 0) {
         const commentsEl = document.createElement("div");
         commentsEl.className = "section";
         commentsEl.innerHTML = "<strong>Comments:</strong><div class='divider'></div>";
-  
-        post.comments.slice(0, 10).forEach(comment => {
+    
+        post.comments.slice(0, 20).forEach(comment => {
           const commentWrapper = document.createElement("div");
           commentWrapper.className = "comment-block";
           const el = createTextSpan(comment, "comment");
@@ -62,11 +71,11 @@
           commentWrapper.appendChild(document.createElement("div")).className = "divider";
           commentsEl.appendChild(commentWrapper);
         });
-  
+    
         container.appendChild(commentsEl);
       }
     }
-  
+    
     function createSection(label, text, type) {
       const section = document.createElement("div");
       section.className = "section";
@@ -75,57 +84,85 @@
       section.appendChild(span);
       return section;
     }
-  
+    
     function createTextSpan(text, type) {
       const span = document.createElement("span");
-      span.textContent = text;
+      span.innerHTML = text;
       span.className = "text";
       span.dataset.type = type;
+    
       span.addEventListener("mouseup", () => {
         const selection = window.getSelection().toString().trim();
         if (!selection) return;
-  
-        const alreadyHighlighted = span.innerHTML.includes(`<mark class="highlight">${selection}</mark>`);
-        if (alreadyHighlighted) {
-          span.innerHTML = span.innerHTML.replace(`<mark class="highlight">${selection}</mark>`, selection);
-        } else {
-          span.innerHTML = span.innerHTML.replace(selection, `<mark class="highlight">${selection}</mark>`);
+    
+        const regex = new RegExp(`(?<!<mark class="highlight">)\\b(${selection})\\b(?!</mark>)`, "gi");
+    
+        // Replace all unmarked instances only
+        let newHTML = span.innerHTML.replace(regex, (match) => {
+          if (match.includes(`<mark`)) return match; // skip already highlighted
+          return `<mark class="highlight">${match}</mark>`;
+        });
+    
+        if (newHTML !== span.innerHTML) {
           lastHighlight = { span, selection };
+          span.innerHTML = newHTML;
         }
       });
+    
       return span;
     }
-  
+    
     function undoLastHighlight() {
       if (lastHighlight && lastHighlight.span && lastHighlight.selection) {
         const { span, selection } = lastHighlight;
-        span.innerHTML = span.innerHTML.replace(`<mark class="highlight">${selection}</mark>`, selection);
+        const markRegex = new RegExp(`<mark class="highlight">${selection}</mark>`, "gi");
+        span.innerHTML = span.innerHTML.replace(markRegex, selection);
         lastHighlight = null;
       }
     }
-  
-    function saveAndNext() {
+    
+    async function saveAndNext() {
+      const post = posts[currentIndex];
+
       const highlightData = {
         source_index: currentIndex,
         highlights: {
           title: getHighlights("title"),
           body: getHighlights("body"),
           comments: getHighlights("comment")
+        },
+        raw_post: {
+          title: document.querySelector("[data-type='title']").textContent,
+          body: document.querySelector("[data-type='body']").textContent,
+          comments: Array.from(document.querySelectorAll("span[data-type='comment']")).map(c => c.textContent)
         }
       };
-      console.log("💾 Saved:", highlightData);
-      highlights.push(highlightData);
-      currentIndex++;
-      renderPost();
+
+      console.log("Saving highlights with source:", highlightData);
+
+      const response = await fetch("http://localhost:5000/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(highlightData)
+      });
+
+      const result = await response.json();
+      if (result.status === "success") {
+        console.log("✅ Saved:", highlightData);
+        currentIndex++;
+        renderPost();
+      } else {
+        alert("Failed to save: " + result.message);
+      }
     }
-  
+    
     function getHighlights(type) {
       const matches = document.querySelectorAll(`[data-type='${type}'] mark.highlight`);
       return Array.from(matches).map(m => m.textContent.trim());
     }
-  
+    
     loadPosts();
-  </script>  
+  </script>    
 
 </body>
 </html>
